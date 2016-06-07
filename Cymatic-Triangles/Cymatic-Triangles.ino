@@ -15,13 +15,14 @@
 #define RESET_PIN 13 // Reset Pin
 
 /* Sensitivity variables, refresh variables, and start/end points */
-#define REFRESH_COEFF 80. // Higher = range of refresh values is lower
+#define TICKS 30 // Ticks (updates) per second
+#define MILLIS_PER_TICK (1000 / TICKS)
 #define SENSITIVITY_DIVISOR 100. // Higher = range of sensitivity values on pot is lower
 #define LEFT_START_POINT ((NUM_LEDS / 2)) // Starting LED for left side
 #define LEFT_END_POINT 1 // Generally the end of the left side is the first LED
 #define RIGHT_START_POINT ((NUM_LEDS / 2) + 1) // Starting LED for the right side
 #define RIGHT_END_POINT (NUM_LEDS - 1) // Generally the end of the right side is the last LED
-#define LED_STACK_SIZE (NUM_LEDS / 2) // How many LED's in each stack
+#define LED_STACK_SIZE (NUM_LEDS) // How many LED's in each stack
 #define MAX_AMPLITUDE 4700 // Maximum possible amplitude value
 #define MAX_AMPLITUDE_MULTIPLIER 380
 #define MIN_AMPLITUDE 545 // Lowest possible amplitude value (Higher number causes there to be more blank LED's)
@@ -29,8 +30,7 @@
 #define SENSITIVITY_MULTIPLIER 200 // Higher = range of sensitivity values on pot is lower
 
 int monomode; // Used to duplicate the left single for manual input
-float refresh_rate; // Refresh rate of the animation
-float refresh_counter = 0; // Looping variable for refresh loop
+int next_tick = 0; // Refresh rate of the animation
 int sensitivity; // Sensitivity value
 int max_amplitude;
 int start_hue = 0;
@@ -111,7 +111,11 @@ void setup() {
 }
 
 void loop() {
-  updateSoundWave();
-  animateInnerTriangles();
-  animateOuterTriangles();
+  int current_time = millis();
+  if (current_time > next_tick) {
+    next_tick = current_time + MILLIS_PER_TICK;
+    updateSoundWave();
+    animateInnerTriangles();
+    animateOuterTriangles();
+  }
 }
