@@ -65,8 +65,7 @@ int stomp_pressed();
 void push_stack(int stack[], int value);
 void getAudiomsg();
 void setsensitivity();
-void animateInnerTriangles();
-void animateOuterTriangles();
+void animateTriangles(CRGB values[], float mappings[]);
 void set_LED_color_A4BW(int position, int value);
 void change_color_mode_A4BW();
 void push_stack_A4BW(int stack[], int value);
@@ -125,7 +124,7 @@ void loop() {
 
   if (current_time > next_animate_tick) {
     next_animate_tick = current_time + ANIMATE_MILLIS_PER_TICK;
-    animateInnerTriangles();
-    animateOuterTriangles();
+    animateTriangles(leds_inner_values, leds_inner_mapping);
+    animateTriangles(leds_outer_values, leds_outer_mapping);
   }
 }
