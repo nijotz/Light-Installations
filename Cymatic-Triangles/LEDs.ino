@@ -73,52 +73,10 @@ void setupOuterTriangleMapping() {
 }
 
 void animateTriangles(CRGB values[], float mappings[]) {
-  /*  Set the LED values based on the left and right stacks
-   *  This is a reverse loop because the left side LED's travel toward
-   *  LED 0.
-   */
   for (int i = 0; i < NUM_LEDS; i++) {
-    // TODO: average colors properly
-    //int lower_idx = floor(leds_inner_mapping[i]);
-    //int upper_idx = ceil(leds_inner_mapping[i]);
-    //float lower = sound_array[lower_idx];
-    //float upper = sound_array[upper_idx];
-    //float value = (lower + upper) / 2;
-    int sound_idx = round(mappings[i] * SOUND_LED_SCALE);
-    set_LED_color(i, values, sound_wave[sound_idx]);
+    int mapping = mappings[i] * SOUND_LED_SCALE;
+    values[i] = sound_wave[mapping];
   }
-
-  // Show the new LED values
-  FastLED.show();
-}
-
-/* Sets led 'position' to 'value' and converts the value to an HSV value.
- * Compared to the A3 code, this code produces color values closer to white.
- * The A3 code always has only two colors lit at a time. For example red and
- * green but not blue or blue and red but not green.
- * As a result, the colors are more like pastel hues than bold hues.
- * Another option would be to do something similar to the limited RGB values from A3.
- */
-void set_LED_color(int position, CRGB leds[], int value) {
-  // If lower than min amplitude, set to min amplitude
-  if(value <= MIN_AMPLITUDE) {
-    value = MIN_AMPLITUDE;
-  }
-
-  // Subtract min amplitude so lowest value is 0
-  value -= MIN_AMPLITUDE;
-
-  float max = (max_amplitude - MIN_AMPLITUDE);
-  if(value > max) value = max;
-  float ratio = ((float)(value / max));
-  if(ratio == 0) {
-    color.val = 0;
-  } else {
-    color.val = 255;
-  }
-  color.saturation = 255;
-  color.hue = start_hue + ((ratio * 255) * 2);
-  leds[position] = color;
 }
 
 // Check if stomp button is being pressed

@@ -18,6 +18,7 @@
 #define AUDIO_MILLIS_PER_TICK (1000 / AUDIO_TICKS)
 #define AUDIO_TIME_SECONDS 1 // How much time it takes audio to travel to the outer edge of the display
 #define SOUND_WAVE_LENGTH (AUDIO_TIME_SECONDS * AUDIO_TICKS)
+#define SOUND_BUFFER_LENGTH 3 // How many audio snapshots to use for smoothing
 
 #define SENSITIVITY_DIVISOR 100. // Higher = range of sensitivity values on pot is lower
 #define LEFT_START_POINT ((NUM_LEDS / 2)) // Starting LED for left side
@@ -50,7 +51,8 @@ float SOUND_LED_SCALE = float(SOUND_WAVE_LENGTH) / float(NUM_LEDS);
 CRGB leds_inner_values[NUM_LEDS] = {0};
 CRGB leds_outer_values[NUM_LEDS] = {0};
 
-int sound_wave[SOUND_WAVE_LENGTH] = {0};
+CRGB sound_wave[SOUND_WAVE_LENGTH] = {0};
+int sound_buffer[SOUND_BUFFER_LENGTH] = {0};
 
 // Set color value to full saturation and value. Set the hue to 0
 CHSV color(0, 255, 255);
@@ -59,18 +61,17 @@ float leds_outer_mapping[NUM_LEDS]; // Represents LED strip
 
 //____________Function declarations______
 int get_freq_sum(int pin);
-void set_LED_color(int position, CRGB leds[], int value);
+CRGB get_LED_color(int position, CRGB leds[], int value);
 void change_color_mode();
 int stomp_pressed();
-void push_stack(int stack[], int value);
+void push_color_stack(CRGB stack[], int value);
+void push_audio_stack(int stack[], int value);
 void getAudiomsg();
 void setsensitivity();
 void animateTriangles(CRGB values[], float mappings[]);
-void set_LED_color_A4BW(int position, int value);
-void change_color_mode_A4BW();
-void push_stack_A4BW(int stack[], int value);
 
 void updateSoundWave();
+CRGB interpolate_sound(CRGB sounds[], int index, int range);
 void setupInnerTriangleMapping();
 void setupOuterTriangleMapping();
 //_______________________________________
@@ -126,5 +127,6 @@ void loop() {
     next_animate_tick = current_time + ANIMATE_MILLIS_PER_TICK;
     animateTriangles(leds_inner_values, leds_inner_mapping);
     animateTriangles(leds_outer_values, leds_outer_mapping);
+    FastLED.show();
   }
 }
