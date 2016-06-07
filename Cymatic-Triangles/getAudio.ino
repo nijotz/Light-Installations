@@ -61,3 +61,11 @@ void updateSoundWave() {
   getAudiomsg();  // sets ampsum left and right value
   push_stack(sound_wave, amp_sum_L);
 }
+
+void push_stack(int stack[], int value) {
+  int i;
+  for(i = (SOUND_WAVE_LENGTH - 1); i >= 0; --i) {
+    stack[i] = stack[i - 1];
+  }
+  stack[0] = value;
+}

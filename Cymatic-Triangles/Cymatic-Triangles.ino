@@ -2,9 +2,7 @@
 #include <math.h>
 #include "EEPROM.h"
 
-/* Output pin definitions */
 #define NUM_LEDS 56 // Number of LED's in the strip
-#define WAVE_LENGTH 1000
 #define DATA_PIN 6 // Data out
 #define ANALOG_PIN_L 1 // Left audio channel
 #define ANALOG_PIN_R 0 // Right audio channel
@@ -14,9 +12,13 @@
 #define STROBE_PIN 12 // Strobe pin
 #define RESET_PIN 13 // Reset Pin
 
-/* Sensitivity variables, refresh variables, and start/end points */
-#define TICKS 30 // Ticks (updates) per second
-#define MILLIS_PER_TICK (1000 / TICKS)
+#define ANIMATE_TICKS 30
+#define ANIMATE_MILLIS_PER_TICK (1000 / ANIMATE_TICKS)
+#define AUDIO_TICKS 60
+#define AUDIO_MILLIS_PER_TICK (1000 / AUDIO_TICKS)
+#define AUDIO_TIME_SECONDS 1 // How much time it takes audio to travel to the outer edge of the display
+#define SOUND_WAVE_LENGTH (AUDIO_TIME_SECONDS * AUDIO_TICKS)
+
 #define SENSITIVITY_DIVISOR 100. // Higher = range of sensitivity values on pot is lower
 #define LEFT_START_POINT ((NUM_LEDS / 2)) // Starting LED for left side
 #define LEFT_END_POINT 1 // Generally the end of the left side is the first LED
@@ -30,12 +32,15 @@
 #define SENSITIVITY_MULTIPLIER 200 // Higher = range of sensitivity values on pot is lower
 
 int monomode; // Used to duplicate the left single for manual input
-int next_tick = 0; // Refresh rate of the animation
+int next_audio_tick = 0; // Refresh rate of the animation
+int next_animate_tick = 0; // Refresh rate of the animation
 int sensitivity; // Sensitivity value
 int max_amplitude;
 int start_hue = 0;
 int amp_sum_L = 0;
 int amp_sum_R = 0;
+
+float SOUND_LED_SCALE = float(SOUND_WAVE_LENGTH) / float(NUM_LEDS);
 
 /* TODO: change this comment. Represents the left and right LED color values.
  * In the case of an odd number of LED's, you need to adjust these
@@ -45,7 +50,7 @@ int amp_sum_R = 0;
 CRGB leds_inner_values[NUM_LEDS] = {0};
 CRGB leds_outer_values[NUM_LEDS] = {0};
 
-int sound_wave[WAVE_LENGTH] = {0};
+int sound_wave[SOUND_WAVE_LENGTH] = {0};
 
 // Set color value to full saturation and value. Set the hue to 0
 CHSV color(0, 255, 255);
@@ -112,9 +117,14 @@ void setup() {
 
 void loop() {
   int current_time = millis();
-  if (current_time > next_tick) {
-    next_tick = current_time + MILLIS_PER_TICK;
+
+  if (current_time > next_audio_tick) {
+    next_audio_tick = current_time + AUDIO_MILLIS_PER_TICK;
     updateSoundWave();
+  }
+
+  if (current_time > next_animate_tick) {
+    next_animate_tick = current_time + ANIMATE_MILLIS_PER_TICK;
     animateInnerTriangles();
     animateOuterTriangles();
   }

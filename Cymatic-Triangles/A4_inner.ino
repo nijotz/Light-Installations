@@ -7,7 +7,7 @@ void setupInnerTriangleMapping() {
   float SIN_60 = 0.866;
   float HEIGHT = SIN_60 * SIDE;
   float SQUARE_HEIGHT = pow(HEIGHT, 2);
-  
+
   // For left(?) side coming from the center
   for (int i = 0; i < SIDE; i++) {
     leds_inner_mapping[i] = i;
@@ -29,13 +29,13 @@ void setupInnerTriangleMapping() {
     int left_side = SIDE + i;
     int right_side = 2 * SIDE - i;
     float bottom_mapping =  sqrt(SQUARE_HEIGHT + pow(HALF_SIDE - i, 2));
-    
+
     leds_inner_mapping[right_side] = bottom_mapping;
     leds_inner_mapping[left_side] = bottom_mapping;
   }
 }
 
-void animateInnerTriangles(){
+void animateInnerTriangles() {
   /*  Set the LED values based on the left and right stacks
    *  This is a reverse loop because the left side LED's travel toward
    *  LED 0.
@@ -47,7 +47,7 @@ void animateInnerTriangles(){
     //float lower = sound_array[lower_idx];
     //float upper = sound_array[upper_idx];
     //float value = (lower + upper) / 2;
-    int sound_idx = round(leds_inner_mapping[i]);
+    int sound_idx = round(leds_inner_mapping[i] * SOUND_LED_SCALE);
     set_LED_color(i, leds_inner_values, sound_wave[sound_idx]);
   }
 
@@ -57,7 +57,7 @@ void animateInnerTriangles(){
 
 /* Sets led 'position' to 'value' and converts the value to an HSV value.
  * Compared to the A3 code, this code produces color values closer to white.
- * The A3 code always has only two colors lit at a time. For example red and 
+ * The A3 code always has only two colors lit at a time. For example red and
  * green but not blue or blue and red but not green.
  * As a result, the colors are more like pastel hues than bold hues.
  * Another option would be to do something similar to the limited RGB values from A3.
@@ -67,10 +67,10 @@ void set_LED_color(int position, CRGB leds[], int value) {
   if(value <= MIN_AMPLITUDE) {
     value = MIN_AMPLITUDE;
   }
-  
+
   // Subtract min amplitude so lowest value is 0
   value -= MIN_AMPLITUDE;
-  
+
   float max = (max_amplitude - MIN_AMPLITUDE);
   if(value > max) value = max;
   float ratio = ((float)(value / max));
@@ -98,17 +98,4 @@ void change_color_mode() {
   if(start_hue >= 255) {
     start_hue = start_hue - 255;
   }
-}
-
-
-/*  Push a new LED color value onto the beginning of the stack.
- *  The last LED color value is discarded. This is the primary 
- *  function relating to the propagation behavior.
- */
-void push_stack(int stack[], int value) {
-  int i;
-  for(i = (LED_STACK_SIZE - 1); i >= 0; --i) {
-    stack[i] = stack[i - 1];
-  }
-  stack[0] = value;
 }

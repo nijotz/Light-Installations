@@ -38,7 +38,7 @@ void setupOuterTriangleMapping() {
   }
 }
 
-void animateOuterTriangles(){
+void animateOuterTriangles() {
   /*  Set the LED values based on the left and right stacks
    *  This is a reverse loop because the left side LED's travel toward
    *  LED 0.
@@ -50,7 +50,7 @@ void animateOuterTriangles(){
     //float lower = sound_array[lower_idx];
     //float upper = sound_array[upper_idx];
     //float value = (lower + upper) / 2;
-    int sound_idx = round(leds_outer_mapping[i]);
+    int sound_idx = round(leds_outer_mapping[i] * SOUND_LED_SCALE);
     set_LED_color(i, leds_outer_values, sound_wave[sound_idx]);
   }
 
