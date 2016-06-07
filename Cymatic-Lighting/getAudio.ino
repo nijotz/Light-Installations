@@ -19,11 +19,7 @@ void getAudiomsg(){
   /* If monomode is active, make both L and R equal to the
      value of L */
   if(monomode) amp_sum_L = amp_sum_R;
-
-////
-  current_amplitude = (amp_sum_L + amp_sum_R)/2;
-////
-
+  
   setsensitivity();
   
   
@@ -59,14 +55,5 @@ void setsensitivity(){
   sensitivity = (analogRead(SENSITIVITY_POT_PIN) / SENSITIVITY_DIVISOR) * SENSITIVITY_MULTIPLIER;
   max_amplitude = MAX_AMPLITUDE - (((1023 - analogRead(SENSITIVITY_POT_PIN)) / SENSITIVITY_DIVISOR) * MAX_AMPLITUDE_MULTIPLIER);
 
-////
-  if (current_amplitude > max_amplitude){
-    max_amplitude_counter += 1;
-  }
-  if (max_amplitude_counter > max_amplitude_counter_limit){
-    max_amplitude_counter = 0;
-  }
-  max_amplitude += (current_amplitude + MIN_AMPLITUDE) / 2;
-////
 }
 
