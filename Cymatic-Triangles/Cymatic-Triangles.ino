@@ -4,7 +4,7 @@
 
 /* Output pin definitions */
 #define NUM_LEDS 56 // Number of LED's in the strip
-#define WAVE_LENGTH 100
+#define WAVE_LENGTH 1000
 #define DATA_PIN 6 // Data out
 #define ANALOG_PIN_L 1 // Left audio channel
 #define ANALOG_PIN_R 0 // Right audio channel
@@ -43,14 +43,14 @@ int amp_sum_R = 0;
  */
 
 CRGB leds_inner_values[NUM_LEDS] = {0};
-//CRGB leds_outer_values[NUM_LEDS] = {0};
+CRGB leds_outer_values[NUM_LEDS] = {0};
 
 int sound_wave[WAVE_LENGTH] = {0};
 
 // Set color value to full saturation and value. Set the hue to 0
 CHSV color(0, 255, 255);
 float leds_inner_mapping[NUM_LEDS]; // Represents LED strip
-//float leds_outer_mapping[NUM_LEDS]; // Represents LED strip
+float leds_outer_mapping[NUM_LEDS]; // Represents LED strip
 
 //____________Function declarations______
 int get_freq_sum(int pin);
@@ -61,22 +61,24 @@ void push_stack(int stack[], int value);
 void getAudiomsg();
 void setsensitivity();
 void animateInnerTriangles();
-//void animateOuterTriangles();
+void animateOuterTriangles();
 void set_LED_color_A4BW(int position, int value);
 void change_color_mode_A4BW();
 void push_stack_A4BW(int stack[], int value);
 
+void updateSoundWave();
 void setupInnerTriangleMapping();
+void setupOuterTriangleMapping();
 //_______________________________________
 
 
 
 void setup() {
   Serial.begin(9600);
-  
+
   // Instantiate Neopixels with FastLED
   FastLED.addLeds<NEOPIXEL, DATA_PIN+1>(leds_inner_values, NUM_LEDS);
-  //FastLED.addLeds<NEOPIXEL, DATA_PIN+1>(leds_outer_values, NUM_LEDS);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds_outer_values, NUM_LEDS);
   FastLED.show();
 
   // Clear any old values on EEPROM
@@ -105,11 +107,11 @@ void setup() {
   monomode = EEPROM.read(1);
 
   setupInnerTriangleMapping();
-  //setupOuterTriangleMapping();
+  setupOuterTriangleMapping();
 }
 
 void loop() {
-  getAudiomsg();  // sets ampsum left and right value
+  updateSoundWave();
   animateInnerTriangles();
-  //animateOuterTriangles();
+  animateOuterTriangles();
 }

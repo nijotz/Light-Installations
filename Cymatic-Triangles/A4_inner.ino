@@ -36,44 +36,23 @@ void setupInnerTriangleMapping() {
 }
 
 void animateInnerTriangles(){
-    
-  // REFRESH_DIVISOR lowers the range of possible pot values
-  refresh_rate = (analogRead(REFRESH_POT_PIN) + 1) * REFRESH_COEFF;
-
-  // Run this code based on the refresh rate
-  if(refresh_counter >= refresh_rate) {
-
-    // Start by resetting the refresh counter
-    refresh_counter = 0;
-
-    /*  Push the new values onto the stack of LED's for each side
-     *  This moves each LED value up the strip by 1 LED and drops the
-     *  last value in the stack. This is the code that effects the propagation
-     */
-    //push_stack(left_LED_stack, amp_sum_L);
-    push_stack(sound_wave, amp_sum_L);
-
-    /*  Set the LED values based on the left and right stacks
-     *  This is a reverse loop because the left side LED's travel toward
-     *  LED 0.
-     */
-    for (int i = 0; i < NUM_LEDS; i++) {
-      // TODO: average colors properly
-      //int lower_idx = floor(leds_inner_mapping[i]);
-      //int upper_idx = ceil(leds_inner_mapping[i]);
-      //float lower = sound_array[lower_idx];
-      //float upper = sound_array[upper_idx];
-      //float value = (lower + upper) / 2;
-      int sound_idx = round(leds_inner_mapping[i]);
-      set_LED_color(i, leds_inner_values, sound_wave[sound_idx]);
-    }
-
-    // Show the new LED values
-    FastLED.show();
+  /*  Set the LED values based on the left and right stacks
+   *  This is a reverse loop because the left side LED's travel toward
+   *  LED 0.
+   */
+  for (int i = 0; i < NUM_LEDS; i++) {
+    // TODO: average colors properly
+    //int lower_idx = floor(leds_inner_mapping[i]);
+    //int upper_idx = ceil(leds_inner_mapping[i]);
+    //float lower = sound_array[lower_idx];
+    //float upper = sound_array[upper_idx];
+    //float value = (lower + upper) / 2;
+    int sound_idx = round(leds_inner_mapping[i]);
+    set_LED_color(i, leds_inner_values, sound_wave[sound_idx]);
   }
 
-  // Increase the refresh counter
-  refresh_counter += 1;
+  // Show the new LED values
+  FastLED.show();
 }
 
 /* Sets led 'position' to 'value' and converts the value to an HSV value.

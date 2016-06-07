@@ -57,3 +57,7 @@ void setsensitivity(){
 
 }
 
+void updateSoundWave() {
+  getAudiomsg();  // sets ampsum left and right value
+  push_stack(sound_wave, amp_sum_L);
+}
