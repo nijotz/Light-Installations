@@ -38,8 +38,8 @@ int get_freq_sum(int pin) {
 
     // strobe to the next frequency
     digitalWrite(STROBE_PIN, HIGH);
+  }
 
-  }//for i
   return spectrum_total;
 }
 
@@ -47,14 +47,25 @@ void set_sensitivity() {
   int current = sound_buffer[0];
 
   if (current > max_amplitude) {
-      max_amplitude *= 1.01;
+      max_amplitude *= 1.1;
   } else {
-      max_amplitude *= 0.9999;
+      max_amplitude *= 0.9995;
   }
 
-  if (max_amplitude < min_amplitude) {
-    max_amplitude = min_amplitude;
+  if (current > min_amplitude) {
+      min_amplitude *= 1.0005;
+  } else {
+      min_amplitude *= 0.9;
   }
+
+  if (min_amplitude < 400) {
+    min_amplitude = 400;
+  }
+
+  if (max_amplitude < min_amplitude + 100) {
+    max_amplitude = min_amplitude + 100;
+  }
+
 }
 
 void updateSoundWave() {
