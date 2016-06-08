@@ -1,6 +1,6 @@
 #include "Arduino.h"
 
-void getAudiomsg(){
+void getAudiomsg() {
 
   // Reset EQ7 chip
   digitalWrite(RESET_PIN, HIGH);
@@ -19,10 +19,6 @@ void getAudiomsg(){
   /* If monomode is active, make both L and R equal to the
      value of L */
   if(monomode) amp_sum_L = amp_sum_R;
-
-  setsensitivity();
-
-
 }
 
 // Read in and sum amplitudes for the 7 frequency bands
@@ -47,18 +43,23 @@ int get_freq_sum(int pin) {
   return spectrum_total;
 }
 
-void setsensitivity(){
-  /*  SENSITIVITY_DIVISOR lowers the range of the possible pot values
-   *  If the value is higher than the max or lower than the min,
-   *  set it to the max or min respectively.
-   */
-  sensitivity = (analogRead(SENSITIVITY_POT_PIN) / SENSITIVITY_DIVISOR) * SENSITIVITY_MULTIPLIER;
-  max_amplitude = MAX_AMPLITUDE - (((1023 - analogRead(SENSITIVITY_POT_PIN)) / SENSITIVITY_DIVISOR) * MAX_AMPLITUDE_MULTIPLIER);
+void set_sensitivity() {
+  int current = sound_buffer[0];
 
+  if (current > max_amplitude) {
+      max_amplitude *= 1.01;
+  } else {
+      max_amplitude *= 0.9999;
+  }
+
+  if (max_amplitude < min_amplitude) {
+    max_amplitude = min_amplitude;
+  }
 }
 
 void updateSoundWave() {
   getAudiomsg();  // sets ampsum left and right value
+  set_sensitivity();  // dynamically adjust sensitivity
   push_audio_stack(sound_buffer, amp_sum_L);
   push_color_stack(sound_wave, sound_buffer[0]);
 }
@@ -72,17 +73,17 @@ void updateSoundWave() {
  */
 CRGB get_LED_color(int value) {
   // If lower than min amplitude, set to min amplitude
-  if(value <= MIN_AMPLITUDE) {
-    value = MIN_AMPLITUDE;
+  if (value <= min_amplitude) {
+    value = min_amplitude;
   }
 
   // Subtract min amplitude so lowest value is 0
-  value -= MIN_AMPLITUDE;
+  value -= min_amplitude;
 
-  float max = (max_amplitude - MIN_AMPLITUDE);
-  if(value > max) value = max;
+  float max = (max_amplitude - min_amplitude);
+  if (value > max) value = max;
   float ratio = ((float)(value / max));
-  if(ratio == 0) {
+  if (ratio == 0) {
     color.val = 0;
   } else {
     color.val = 255;

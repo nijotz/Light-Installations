@@ -35,8 +35,8 @@
 int monomode; // Used to duplicate the left single for manual input
 int next_audio_tick = 0; // Refresh rate of the animation
 int next_animate_tick = 0; // Refresh rate of the animation
-int sensitivity; // Sensitivity value
-int max_amplitude;
+float min_amplitude = 500;
+float max_amplitude = 4700;
 int start_hue = 0;
 int amp_sum_L = 0;
 int amp_sum_R = 0;
