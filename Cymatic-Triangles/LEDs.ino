@@ -9,17 +9,17 @@ void setupInnerTriangleMapping() {
   float SQUARE_HEIGHT = pow(HEIGHT, 2);
 
   // For left(?) side coming from the center
-  for (int i = 0; i < SIDE; i++) {
+  for (int i = 0; i <= SIDE; i++) {
     leds_inner_mapping[i] = i;
   }
 
   // For the other side coming from the center
-  for (int i = 0; i < SIDE; i++) {
+  for (int i = 0; i <= SIDE; i++) {
     leds_inner_mapping[NUM_LEDS - i] = i;
   }
 
   // For the bottom side of the inner triangle
-  for (int i = 0; i < HALF_SIDE; i++) {
+  for (int i = 0; i <= HALF_SIDE; i++) {
     // A^2 + B^2 = C^2
     // A = HEIGHT
     // B = HALF_SIDE
@@ -44,12 +44,7 @@ void setupOuterTriangleMapping() {
   float HEIGHT = SIN_60 * SIDE;
 
   // For the top side of the outer triangle
-  for (int i = 0; i < HALF_SIDE; i++) {
-    // A^2 + B^2 = C^2
-    // A = HEIGHT
-    // B = HALF_SIDE
-    // C = HYPOTONUSE -- where on the sound wave array to pull values from
-
+  for (int i = 0; i <= HALF_SIDE; i++) {
     // Doesn't matter left vs right, they get the same values
     int left_side = SIDE + i;
     int right_side = 2 * SIDE - i;
@@ -60,7 +55,7 @@ void setupOuterTriangleMapping() {
   }
 
   // For the bottom sides of the outer triangle
-  for (int i = 0; i < SIDE; i++) {
+  for (int i = 0; i <= SIDE + 1; i++) {
     int left_side = i;
     int right_side = NUM_LEDS - i;
 

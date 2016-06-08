@@ -2,7 +2,7 @@
 #include <math.h>
 #include "EEPROM.h"
 
-#define NUM_LEDS 56 // Number of LED's in the strip
+#define NUM_LEDS 57 // Number of LED's in the strip
 #define DATA_PIN 6 // Data out
 #define ANALOG_PIN_L 1 // Left audio channel
 #define ANALOG_PIN_R 0 // Right audio channel
