@@ -30,6 +30,11 @@ CRGB mic_leds[NUM_MIC_LEDS]; /* Initialize FastLED leds array */
 Wisp wisp1(WISP_1_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_1_HUE);
 Wisp wisp2(WISP_2_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_2_HUE);
 
+/* Variables to be changed in the loop */
+int speed = BASE_SPEED; /* Speed of Wisps (as of now they share the speed globally) */
+int brightness_step = BASE_BRIGHTNESS_STEP; /* How much brightness is lost from one trail pixel to the next */
+int new_brightness; /* Temp variable for the new calculated brightness */
+
 void setupMic() {
   /* Instantiate FastLED */
   FastLED.addLeds<NEOPIXEL, MIC_DATA_PIN>(mic_leds, NUM_MIC_LEDS);
@@ -45,9 +50,6 @@ float normalize(float x) {
 
 void animateMic() {
   float peak = normalize((float)amp_sum_L);
-  int speed; /* Speed of Wisps (as of now they share the speed globally) */
-  int new_brightness; /* Temp variable for the new calculated brightness */
-  int brightness_step; /* How much brightness is lost from one trail pixel to the next */
 
   /* Calculate the new speed based on the peak value (it's between 0.0 and 1.0) */
   speed = BASE_SPEED - (int)(peak * (BASE_SPEED * 0.9));
@@ -66,7 +68,7 @@ void animateMic() {
     wisp2.set_brightness(new_brightness);
   }
 
-  /* Change the brightness step so that brightness of trail pixels doesn't go below 0 */
+  /* Change the brightness step so taht brightness of trail pixels doens't go below 0 */
   brightness_step = new_brightness / (NUM_MIC_LEDS / 1.5);
 
   /* If Wisps reach the end of the strip, start over at the beginning */
