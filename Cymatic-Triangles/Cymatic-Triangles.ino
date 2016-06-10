@@ -43,11 +43,6 @@ int amp_sum_R = 0;
 
 float SOUND_LED_SCALE = float(SOUND_WAVE_LENGTH) / float(NUM_LEDS);
 
-/* TODO: change this comment. Represents the left and right LED color values.
- * In the case of an odd number of LED's, you need to adjust these
- * values and the values of RIGHT_START_POINT, LEFT_START_POINT, etc.
- */
-
 CRGB leds_inner_values[NUM_LEDS] = {0};
 CRGB leds_outer_values[NUM_LEDS] = {0};
 
@@ -74,6 +69,9 @@ void updateSoundWave();
 CRGB interpolate_sound(CRGB sounds[], int index, int range);
 void setupInnerTriangleMapping();
 void setupOuterTriangleMapping();
+
+void setupMic();
+void loopMic();
 //_______________________________________
 
 
@@ -113,6 +111,8 @@ void setup() {
 
   setupInnerTriangleMapping();
   setupOuterTriangleMapping();
+
+  //setupMic();
 }
 
 void loop() {
@@ -129,4 +129,6 @@ void loop() {
     animateTriangles(leds_outer_values, leds_outer_mapping);
     FastLED.show();
   }
+
+  //loopMic();
 }
