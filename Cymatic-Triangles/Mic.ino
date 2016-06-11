@@ -8,7 +8,7 @@
 #include <SD.h>
 #include <SerialFlash.h>
 
-#define NUM_MIC_LEDS 29 /* LED's in the strip */
+#define NUM_MIC_LEDS 27 /* LED's in the strip */
 #define MIC_DATA_PIN 8 /* LED Data Pin */
 
 #define WISP_1_HUE 0 /* Wisp 1 starting hue */
@@ -22,10 +22,6 @@
 #define BASE_HUE_STEP 3 /* Starting hue increment between wisp and trail elements */
 #define BASE_BRIGHTNESS 100 /* Base Wisp brightness */
 #define BRIGHTNESS_EASE_INCREMENT 5 /* How much Wisp brightness changes per step */
-
-/* Teensy Audio library instantiations */
-AudioAnalyzePeak         peak1;          //xy=720,609
-AudioAnalyzePeak         peak2;          //xy=737,682
 
 uint8_t dataPin = MIC_DATA_PIN;    // Yellow wire on Adafruit Pixels
 CRGB mic_leds[NUM_MIC_LEDS]; /* Initialize FastLED leds array */
@@ -41,17 +37,26 @@ int new_brightness; /* Temp variable for the new calculated brightness */
 
 void setupMic() {
   /* Instantiate FastLED */
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(mic_leds, NUM_MIC_LEDS);
+  FastLED.addLeds<NEOPIXEL, MIC_DATA_PIN>(mic_leds, NUM_MIC_LEDS);
   FastLED.show();
 }
 
-void loopMic() {
+float normalize(float x) {
+  x = x - min_amplitude;
+  x = x / max_amplitude;
+  if (x > 1) { x = 1; }
+  return x;
+}
+
+void animateMic() {
+  float peak = normalize((float)amp_sum_L);
+
   /* Calculate the new speed based on the peak value (it's between 0.0 and 1.0) */
-  speed = BASE_SPEED - (int)( peak1.read() * (BASE_SPEED * 0.9));
+  speed = BASE_SPEED - (int)(peak * (BASE_SPEED * 0.9));
   if(speed < 0) speed = 0; /* In case speed drops below 0, we don't want that */
 
   /* Calculate new brightness, ease brightness toward the new value */
-  new_brightness = BASE_BRIGHTNESS + (int)( peak2.read() * 100);
+  new_brightness = BASE_BRIGHTNESS + (int)(peak * 100);
   if(wisp1.get_brightness() < new_brightness && wisp1.get_brightness() < (new_brightness - BRIGHTNESS_EASE_INCREMENT)) {
     wisp1.set_brightness(wisp1.get_brightness() + BRIGHTNESS_EASE_INCREMENT);
     wisp2.set_brightness(wisp2.get_brightness() + BRIGHTNESS_EASE_INCREMENT);

@@ -71,7 +71,7 @@ void setupInnerTriangleMapping();
 void setupOuterTriangleMapping();
 
 void setupMic();
-void loopMic();
+void animateMic();
 //_______________________________________
 
 
@@ -112,7 +112,7 @@ void setup() {
   setupInnerTriangleMapping();
   setupOuterTriangleMapping();
 
-  //setupMic();
+  setupMic();
 }
 
 void loop() {
@@ -127,8 +127,8 @@ void loop() {
     next_animate_tick = current_time + ANIMATE_MILLIS_PER_TICK;
     animateTriangles(leds_inner_values, leds_inner_mapping);
     animateTriangles(leds_outer_values, leds_outer_mapping);
+    animateMic();
     FastLED.show();
   }
 
-  //loopMic();
 }
