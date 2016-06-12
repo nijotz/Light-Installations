@@ -12,8 +12,9 @@
 #define STROBE_PIN 12 // Strobe pin
 #define RESET_PIN 13 // Reset Pin
 
-#define ANIMATE_TICKS 30
-#define ANIMATE_MILLIS_PER_TICK (1000 / ANIMATE_TICKS)
+#define ANIMATE_TICKS 60.0
+#define ANIMATE_SECS_PER_TICK (1.0 / ANIMATE_TICKS)
+#define ANIMATE_MILLIS_PER_TICK (1000.0 / ANIMATE_TICKS)
 #define AUDIO_TICKS 60
 #define AUDIO_MILLIS_PER_TICK (1000 / AUDIO_TICKS)
 #define AUDIO_TIME_SECONDS 1 // How much time it takes audio to travel to the outer edge of the display
@@ -82,7 +83,6 @@ void setup() {
   // Instantiate Neopixels with FastLED
   FastLED.addLeds<NEOPIXEL, DATA_PIN+1>(leds_inner_values, NUM_LEDS);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds_outer_values, NUM_LEDS);
-  FastLED.show();
 
   // Clear any old values on EEPROM
   if (EEPROM.read(1) > 1){EEPROM.write(1,0);} // Clear EEPROM

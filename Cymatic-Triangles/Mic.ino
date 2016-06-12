@@ -8,79 +8,93 @@
 #include <SD.h>
 #include <SerialFlash.h>
 
-#define NUM_MIC_LEDS 27 /* LED's in the strip */
-#define MIC_DATA_PIN 8 /* LED Data Pin */
+#include <math.h>
 
-#define WISP_1_HUE 0 /* Wisp 1 starting hue */
-#define WISP_2_HUE 20 /* Wisp 2 starting hue */
-#define WISP_1_START_POS 0 /* Wisp 1 starting position */
-#define WISP_2_START_POS 15 /* Wisp 2 starting position */
-#define WISP_HUE_INCREMENT 2 /* How much the color of the Wisps changes per loop */
-#define BASE_TRAIL 13 /* Starting wisp trail length */
-#define BASE_BRIGHTNESS_STEP 8 /* Starting brightness increment between wisp and trail elements */
-#define BASE_HUE_STEP 3 /* Starting hue increment between wisp and trail elements */
-#define BASE_BRIGHTNESS 100 /* Base Wisp brightness */
-#define BRIGHTNESS_EASE_INCREMENT 5 /* How much Wisp brightness changes per step */
+#define NUM_MIC_LEDS 28
+#define MIC_DATA_PIN 8
 
-uint8_t dataPin = MIC_DATA_PIN;    // Yellow wire on Adafruit Pixels
-CRGB mic_leds[NUM_MIC_LEDS]; /* Initialize FastLED leds array */
+#define MAX_ROTATIONS_PER_SEC 4.0
+#define MAX_SPEED (NUM_MIC_LEDS * MAX_ROTATIONS_PER_SEC) /* LEDs per second */
 
-/* Instantiate Wisp objects (you can add more than 2) */
-Wisp wisp1(WISP_1_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_1_HUE);
-Wisp wisp2(WISP_2_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_2_HUE);
+#define BRIGHTNESS_GRAVITY 120.0
+#define BRIGHTNESS_INITIAL_VEL -100.0
+#define ROTATION_ACCEL_COEFF 1.0
 
-/* Variables to be changed in the loop */
-int brightness_step = BASE_BRIGHTNESS_STEP; /* How much brightness is lost from one trail pixel to the next */
-int new_brightness; /* Temp variable for the new calculated brightness */
+uint8_t dataPin = MIC_DATA_PIN;
+CRGB mic_leds_rgb[NUM_MIC_LEDS];
+double mic_leds_hue[NUM_MIC_LEDS];
+double mic_leds_val[NUM_MIC_LEDS];
+double mic_leds_vel[NUM_MIC_LEDS];
+
+
+double current_led = 5.0;
+double speed = 30.0;
 
 void setupMic() {
   /* Instantiate FastLED */
-  FastLED.addLeds<NEOPIXEL, MIC_DATA_PIN>(mic_leds, NUM_MIC_LEDS);
-  FastLED.show();
+  FastLED.addLeds<NEOPIXEL, MIC_DATA_PIN>(mic_leds_rgb, NUM_MIC_LEDS);
+
+  for (int i = 0; i < NUM_MIC_LEDS; i++) {
+    mic_leds_val[i] = 255.0;
+    mic_leds_vel[i] = BRIGHTNESS_INITIAL_VEL;
+  }
 }
 
 float normalize(float x) {
   x = x - min_amplitude;
-  x = x / max_amplitude;
+  x = x / (max_amplitude - min_amplitude);
   if (x > 1) { x = 1; }
+  if (x < 0) { x = 0; }
   return x;
 }
 
 void animateMic() {
-  float peak = normalize((float)amp_sum_L);
-
-  /* Calculate new brightness, ease brightness toward the new value */
-  new_brightness = BASE_BRIGHTNESS + (int)(peak * 100);
-  if(wisp1.get_brightness() < new_brightness && wisp1.get_brightness() < (new_brightness - BRIGHTNESS_EASE_INCREMENT)) {
-    wisp1.set_brightness(wisp1.get_brightness() + BRIGHTNESS_EASE_INCREMENT);
-    wisp2.set_brightness(wisp2.get_brightness() + BRIGHTNESS_EASE_INCREMENT);
-  } else if(wisp1.get_brightness() > new_brightness && wisp1.get_brightness() > (new_brightness + BRIGHTNESS_EASE_INCREMENT)) {
-    wisp1.set_brightness(wisp1.get_brightness() - BRIGHTNESS_EASE_INCREMENT);
-    wisp2.set_brightness(wisp2.get_brightness() - BRIGHTNESS_EASE_INCREMENT);
-  } else {
-    wisp1.set_brightness(new_brightness);
-    wisp2.set_brightness(new_brightness);
+  // Apply brightness gravity to all LEDs
+  for (int i = 0; i < NUM_MIC_LEDS; i++) {
+    double vel = mic_leds_vel[i];
+    vel += (-BRIGHTNESS_GRAVITY) * ANIMATE_SECS_PER_TICK;
+    if (mic_leds_val[i] < 1 && vel < 0) { vel = 0; }
+    mic_leds_vel[i] = vel;
   }
 
-  /* Change the brightness step so taht brightness of trail pixels doens't go below 0 */
-  brightness_step = new_brightness / (NUM_MIC_LEDS / 1.5);
+  // Rotate color values
+  for (int i = 0; i < NUM_MIC_LEDS; i++) {
+    double hue = mic_leds_hue[i];
+    hue += 0.1;
+    hue = fmod(hue, 255);
+    mic_leds_hue[i] = hue;
+  }
 
-  /* If Wisps reach the end of the strip, start over at the beginning */
-  if(wisp1.get_pos() > (NUM_MIC_LEDS - 1)) wisp1.set_pos(0);
-  if(wisp2.get_pos() > (NUM_MIC_LEDS - 1)) wisp2.set_pos(0);
+  double peak = normalize((float)amp_sum_L);
+  double rot_accel = (peak - 0.5) * ROTATION_ACCEL_COEFF;
 
-  /* Shift Wisp hue over time, if it goes above 255, reset to 0 */
-  wisp1.set_hue(wisp1.get_hue() + WISP_HUE_INCREMENT);
-  wisp2.set_hue(wisp2.get_hue() + WISP_HUE_INCREMENT);
-  if((wisp1.get_hue() + 2) > 255) wisp1.set_hue(0);
-  if((wisp2.get_hue() + 2) > 255) wisp2.set_hue(0);
+  speed = speed + rot_accel;
+  if (speed < 0) { speed = 0; }
+  if (speed > MAX_SPEED) { speed = MAX_SPEED; }
 
-  /* Set the Wisp pixel color and brightness */
-  mic_leds[wisp1.get_pos()] = CHSV(wisp1.get_hue(), 180, wisp1.get_brightness());
-  mic_leds[wisp2.get_pos()] = CHSV(wisp2.get_hue(), 180, wisp2.get_brightness());
+  // Rotate around the ring
+  int last = (int)current_led;
+  current_led += speed * ANIMATE_SECS_PER_TICK;
+  current_led = fmod(current_led, (NUM_MIC_LEDS - 1));
+  int curr = (int)current_led;
 
-  /* Update Wisp positions and set trail pixel LED colors */
-  wisp1.update(mic_leds, brightness_step, NUM_MIC_LEDS, BASE_HUE_STEP);
-  wisp2.update(mic_leds, brightness_step, NUM_MIC_LEDS, BASE_HUE_STEP);
+  // Max the brightness and reset the velocity of every LED between the last
+  // and the current
+  while (last != curr) {
+    mic_leds_val[last] = 255;
+    mic_leds_vel[last] = BRIGHTNESS_INITIAL_VEL;
+    last++;
+    last %= (NUM_MIC_LEDS - 1);
+  }
+
+  // Apply brightness velocities to brightness values
+  for (int i = 0; i < NUM_MIC_LEDS; i++) {
+    mic_leds_val[i] += mic_leds_vel[i] * ANIMATE_SECS_PER_TICK;
+    if (mic_leds_val[i] < 0) { mic_leds_val[i] = 0; }
+    if (mic_leds_val[i] > 255) { mic_leds_val[i] = 255; }
+  }
+
+  for (int i = 0; i < NUM_MIC_LEDS; i++) {
+    mic_leds_rgb[i] = CHSV(mic_leds_hue[i], 255, mic_leds_val[i]);
+  }
 }
-
