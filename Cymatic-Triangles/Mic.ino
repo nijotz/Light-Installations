@@ -17,7 +17,6 @@
 #define WISP_2_START_POS 15 /* Wisp 2 starting position */
 #define WISP_HUE_INCREMENT 2 /* How much the color of the Wisps changes per loop */
 #define BASE_TRAIL 13 /* Starting wisp trail length */
-#define BASE_SPEED 100 /* Starting wisp rotation speed */
 #define BASE_BRIGHTNESS_STEP 8 /* Starting brightness increment between wisp and trail elements */
 #define BASE_HUE_STEP 3 /* Starting hue increment between wisp and trail elements */
 #define BASE_BRIGHTNESS 100 /* Base Wisp brightness */
@@ -31,7 +30,6 @@ Wisp wisp1(WISP_1_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_1_HUE);
 Wisp wisp2(WISP_2_START_POS, BASE_TRAIL, BASE_BRIGHTNESS, WISP_2_HUE);
 
 /* Variables to be changed in the loop */
-int speed = BASE_SPEED; /* Speed of Wisps (as of now they share the speed globally) */
 int brightness_step = BASE_BRIGHTNESS_STEP; /* How much brightness is lost from one trail pixel to the next */
 int new_brightness; /* Temp variable for the new calculated brightness */
 
@@ -50,10 +48,6 @@ float normalize(float x) {
 
 void animateMic() {
   float peak = normalize((float)amp_sum_L);
-
-  /* Calculate the new speed based on the peak value (it's between 0.0 and 1.0) */
-  speed = BASE_SPEED - (int)(peak * (BASE_SPEED * 0.9));
-  if(speed < 0) speed = 0; /* In case speed drops below 0, we don't want that */
 
   /* Calculate new brightness, ease brightness toward the new value */
   new_brightness = BASE_BRIGHTNESS + (int)(peak * 100);
