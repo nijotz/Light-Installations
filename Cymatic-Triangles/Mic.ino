@@ -16,9 +16,9 @@
 #define MAX_ROTATIONS_PER_SEC 4.0
 #define MAX_SPEED (NUM_MIC_LEDS * MAX_ROTATIONS_PER_SEC) /* LEDs per second */
 
-#define BRIGHTNESS_GRAVITY 120.0
-#define BRIGHTNESS_INITIAL_VEL -100.0
-#define ROTATION_ACCEL_COEFF 1.0
+#define BRIGHTNESS_GRAVITY (2.0 / ANIMATE_SECS_PER_TICK)
+#define BRIGHTNESS_INITIAL_VEL (-1.0 / ANIMATE_SECS_PER_TICK)
+#define ROTATION_ACCEL_COEFF (0.03 / ANIMATE_SECS_PER_TICK)
 
 uint8_t dataPin = MIC_DATA_PIN;
 CRGB mic_leds_rgb[NUM_MIC_LEDS];
@@ -27,19 +27,21 @@ double mic_leds_val[NUM_MIC_LEDS];
 double mic_leds_vel[NUM_MIC_LEDS];
 
 
-double current_led = 5.0;
-double speed = 30.0;
+double current_led = (NUM_MIC_LEDS / 2);
+double speed = NUM_MIC_LEDS;
 
 void setupMic() {
-  /* Instantiate FastLED */
+  // Instantiate FastLED
   FastLED.addLeds<NEOPIXEL, MIC_DATA_PIN>(mic_leds_rgb, NUM_MIC_LEDS);
 
+  // Start with full brightness LEDs that fade to test that code works
   for (int i = 0; i < NUM_MIC_LEDS; i++) {
     mic_leds_val[i] = 255.0;
     mic_leds_vel[i] = BRIGHTNESS_INITIAL_VEL;
   }
 }
 
+// Returns a number between 0 and 1 that represents current amplitude of sound
 float normalize(float x) {
   x = x - min_amplitude;
   x = x / (max_amplitude - min_amplitude);
@@ -65,21 +67,22 @@ void animateMic() {
     mic_leds_hue[i] = hue;
   }
 
+  // Use changes in amplitude to determine acceleration
   double peak = normalize((float)amp_sum_L);
   double rot_accel = (peak - 0.5) * ROTATION_ACCEL_COEFF;
 
+  // Apply acceleration to rotation speed
   speed = speed + rot_accel;
   if (speed < 0) { speed = 0; }
   if (speed > MAX_SPEED) { speed = MAX_SPEED; }
 
-  // Rotate around the ring
+  // Rotate around the ring according to speed
   int last = (int)current_led;
   current_led += speed * ANIMATE_SECS_PER_TICK;
   current_led = fmod(current_led, (NUM_MIC_LEDS - 1));
   int curr = (int)current_led;
 
-  // Max the brightness and reset the velocity of every LED between the last
-  // and the current
+  // Max brightness and reset velocity of LEDs between the last and current
   while (last != curr) {
     mic_leds_val[last] = 255;
     mic_leds_vel[last] = BRIGHTNESS_INITIAL_VEL;
@@ -94,6 +97,7 @@ void animateMic() {
     if (mic_leds_val[i] > 255) { mic_leds_val[i] = 255; }
   }
 
+  // Apply values to the FastLED array
   for (int i = 0; i < NUM_MIC_LEDS; i++) {
     mic_leds_rgb[i] = CHSV(mic_leds_hue[i], 255, mic_leds_val[i]);
   }
