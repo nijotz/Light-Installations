@@ -13,12 +13,12 @@
 #define NUM_MIC_LEDS 28
 #define MIC_DATA_PIN 8
 
-#define MAX_ROTATIONS_PER_SEC 4.0
+#define MAX_ROTATIONS_PER_SEC 2.0
 #define MAX_SPEED (NUM_MIC_LEDS * MAX_ROTATIONS_PER_SEC) /* LEDs per second */
 
 #define BRIGHTNESS_GRAVITY (2.0 / ANIMATE_SECS_PER_TICK)
 #define BRIGHTNESS_INITIAL_VEL (-1.0 / ANIMATE_SECS_PER_TICK)
-#define ROTATION_ACCEL_COEFF (0.03 / ANIMATE_SECS_PER_TICK)
+#define ROTATION_ACCEL_COEFF (0.02 / ANIMATE_SECS_PER_TICK)
 
 uint8_t dataPin = MIC_DATA_PIN;
 CRGB mic_leds_rgb[NUM_MIC_LEDS];
@@ -59,12 +59,10 @@ void animateMic() {
     mic_leds_vel[i] = vel;
   }
 
-  // Rotate color values
+  // Rotate color values based on sound
+  double new_hue = (8 * mic_leds_hue[0] + (double)color.hue) / 9.0;
   for (int i = 0; i < NUM_MIC_LEDS; i++) {
-    double hue = mic_leds_hue[i];
-    hue += 0.1;
-    hue = fmod(hue, 255);
-    mic_leds_hue[i] = hue;
+    mic_leds_hue[i] = (int)new_hue;
   }
 
   // Use changes in amplitude to determine acceleration
