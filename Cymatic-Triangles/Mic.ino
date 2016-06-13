@@ -59,14 +59,6 @@ void animateMic() {
     mic_leds_vel[i] = vel;
   }
 
-  // Rotate color values
-  for (int i = 0; i < NUM_MIC_LEDS; i++) {
-    double hue = mic_leds_hue[i];
-    hue += 0.1;
-    hue = fmod(hue, 255);
-    mic_leds_hue[i] = hue;
-  }
-
   // Use changes in amplitude to determine acceleration
   double peak = normalize((float)amp_sum_L);
   double rot_accel = (peak - 0.5) * ROTATION_ACCEL_COEFF;
@@ -89,6 +81,9 @@ void animateMic() {
     last++;
     last %= (NUM_MIC_LEDS - 1);
   }
+
+  // Assign hue based on current audio
+  mic_leds_hue[curr] = color.hue;
 
   // Apply brightness velocities to brightness values
   for (int i = 0; i < NUM_MIC_LEDS; i++) {

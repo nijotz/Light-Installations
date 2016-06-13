@@ -57,7 +57,7 @@ float leds_outer_mapping[NUM_LEDS]; // Represents LED strip
 
 //____________Function declarations______
 int get_freq_sum(int pin);
-CRGB get_LED_color(int position, CRGB leds[], int value);
+CRGB get_LED_color(int value);
 void change_color_mode();
 int stomp_pressed();
 void push_color_stack(CRGB stack[], int value);
