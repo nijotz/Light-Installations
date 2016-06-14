@@ -13,11 +13,11 @@
 #define NUM_MIC_LEDS 28
 #define MIC_DATA_PIN 8
 
-#define MAX_ROTATIONS_PER_SEC 4.0
+#define MAX_ROTATIONS_PER_SEC 2
 #define MAX_SPEED (NUM_MIC_LEDS * MAX_ROTATIONS_PER_SEC) /* LEDs per second */
 
-#define BRIGHTNESS_GRAVITY (2.0 / ANIMATE_SECS_PER_TICK)
-#define BRIGHTNESS_INITIAL_VEL (-1.0 / ANIMATE_SECS_PER_TICK)
+#define BRIGHTNESS_GRAVITY (6.0 / ANIMATE_SECS_PER_TICK)
+#define BRIGHTNESS_INITIAL_VEL_COEFF 6
 #define ROTATION_ACCEL (0.3 / ANIMATE_SECS_PER_TICK)
 #define ROTATION_FRICTION (0.03 / ANIMATE_SECS_PER_TICK)
 
@@ -38,7 +38,7 @@ void setupMic() {
   // Start with full brightness LEDs that fade to test that code works
   for (int i = 0; i < NUM_MIC_LEDS; i++) {
     mic_leds_val[i] = 255.0;
-    mic_leds_vel[i] = BRIGHTNESS_INITIAL_VEL;
+    mic_leds_vel[i] = 0;
   }
 }
 
@@ -83,7 +83,7 @@ void animateMic() {
   // Max brightness and reset velocity of LEDs between the last and current
   while (last != curr) {
     mic_leds_val[last] = 255;
-    mic_leds_vel[last] = BRIGHTNESS_INITIAL_VEL;
+    mic_leds_vel[last] = (-BRIGHTNESS_INITIAL_VEL_COEFF) * speed;
     last++;
     last %= (NUM_MIC_LEDS - 1);
   }
