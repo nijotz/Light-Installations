@@ -27,7 +27,7 @@ double mic_leds_hue[NUM_MIC_LEDS];
 double mic_leds_val[NUM_MIC_LEDS];
 double mic_leds_vel[NUM_MIC_LEDS];
 
-
+double last_hue;
 double current_led = (NUM_MIC_LEDS / 2);
 double speed = NUM_MIC_LEDS;
 
@@ -89,7 +89,9 @@ void animateMic() {
   }
 
   // Assign hue based on current audio
-  mic_leds_hue[curr] = color.hue;
+  double cur_hue = ((8.0 * last_hue) + (double)color.hue) / 9.0;
+  mic_leds_hue[curr] = cur_hue;
+  last_hue = cur_hue;
 
   // Apply brightness velocities to brightness values
   for (int i = 0; i < NUM_MIC_LEDS; i++) {
